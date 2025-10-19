@@ -31,7 +31,11 @@ export default function RootLayout({
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <AuthProvider>
-              {USE_CENTRALIZED_AUTH {USE_CENTRALIZED_AUTH && <TokenHandler />}{USE_CENTRALIZED_AUTH && <TokenHandler />} <Suspense fallback={<div>Loading auth...</div>}><TokenHandler /></Suspense>}
+              {USE_CENTRALIZED_AUTH && (
+                <Suspense fallback={<div>Loading auth...</div>}>
+                  <TokenHandler />
+                </Suspense>
+              )}
               {children}
             </AuthProvider>
           </ThemeProvider>
