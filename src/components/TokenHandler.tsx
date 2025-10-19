@@ -35,9 +35,11 @@ export default function TokenHandler() {
                     }));
                     
                     // Remove the token from URL and redirect to clean dashboard
-                    const url = new URL(window.location.href);
-                    url.searchParams.delete('auth_token');
-                    router.replace(url.pathname + url.search);
+                    if (typeof window !== 'undefined') {
+                        const url = new URL(window.location.href);
+                        url.searchParams.delete('auth_token');
+                        router.replace(url.pathname + url.search);
+                    }
                 } else {
                     console.error('❌ [TOKEN HANDLER] Token validation failed:', data.error);
                     router.replace('/auth/signin?error=invalid_token');

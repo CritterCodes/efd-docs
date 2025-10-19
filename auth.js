@@ -48,7 +48,13 @@ const providers = USE_CENTRALIZED_AUTH ? [] : [
                     return null;
                 }
 
-                const user = await response.json();
+                let user;
+                try {
+                    user = await response.json();
+                } catch (parseError) {
+                    console.error('Error parsing login response:', parseError);
+                    return null;
+                }
                 
                 if (user) {
                     return {
@@ -224,7 +230,13 @@ async function refreshAccessToken(token) {
             }),
         });
 
-        const refreshedTokens = await response.json();
+        let refreshedTokens;
+        try {
+            refreshedTokens = await response.json();
+        } catch (parseError) {
+            console.error('Error parsing refresh token response:', parseError);
+            throw new Error('Failed to parse refresh token response');
+        }
 
         if (!response.ok) {
             console.error("Error refreshing access token - Response not ok:", refreshedTokens);

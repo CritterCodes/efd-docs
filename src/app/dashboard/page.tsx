@@ -50,8 +50,10 @@ export default function DashboardPage() {
   // Check for session and redirect to admin if not authenticated
   if (status === 'unauthenticated' || (!session?.user && status !== 'loading')) {
     console.log('❌ [DOCS DASHBOARD] No session found, redirecting to admin login')
-    const adminLoginUrl = `http://localhost:3001/auth/signin?callbackUrl=${encodeURIComponent(window.location.href)}`
-    window.location.href = adminLoginUrl
+    if (typeof window !== 'undefined') {
+      const adminLoginUrl = `http://localhost:3001/auth/signin?callbackUrl=${encodeURIComponent(window.location.href)}`
+      window.location.href = adminLoginUrl
+    }
     return <div>Redirecting to authentication...</div>
   }
 

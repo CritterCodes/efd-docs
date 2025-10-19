@@ -29,7 +29,7 @@ function SignInContent() {
   
   useEffect(() => {
     // If centralized auth is enabled, redirect to admin immediately
-    if (useCentralizedAuth) {
+    if (useCentralizedAuth && typeof window !== 'undefined') {
       const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
       const adminAuthUrl = `${process.env.NEXT_PUBLIC_ADMIN_URL}/auth/signin?callbackUrl=${encodeURIComponent(window.location.origin + callbackUrl)}`
       console.log('🔄 Redirecting to centralized auth:', adminAuthUrl)

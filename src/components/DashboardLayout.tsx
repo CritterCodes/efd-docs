@@ -35,7 +35,7 @@ export function DashboardLayout({ children }: Props) {
 
   // Redirect to signin if not authenticated (client-side check for centralized auth)
   useEffect(() => {
-    if (USE_CENTRALIZED_AUTH && centralizedSession?.status === 'unauthenticated') {
+    if (USE_CENTRALIZED_AUTH && centralizedSession?.status === 'unauthenticated' && typeof window !== 'undefined') {
       window.location.href = '/auth/signin'
     }
   }, [centralizedSession?.status])
