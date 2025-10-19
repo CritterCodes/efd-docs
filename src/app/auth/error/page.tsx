@@ -1,15 +1,14 @@
+'use client'
+
 import { Container, Paper, Typography, Button, Box } from '@mui/material'
 import { Error } from '@mui/icons-material'
 import Link from 'next/link'
+import { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 
-interface Props {
-  searchParams: Promise<{
-    error?: string
-  }>
-}
-
-export default async function AuthErrorPage({ searchParams }: Props) {
-  const { error } = await searchParams
+function AuthErrorContent() {
+  const searchParams = useSearchParams()
+  const error = searchParams.get('error')
 
   const getErrorMessage = (error: string) => {
     switch (error) {
@@ -57,5 +56,19 @@ export default async function AuthErrorPage({ searchParams }: Props) {
         </Paper>
       </Box>
     </Container>
+  )
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={
+      <Container maxWidth="sm">
+        <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Typography>Loading...</Typography>
+        </Box>
+      </Container>
+    }>
+      <AuthErrorContent />
+    </Suspense>
   )
 }
