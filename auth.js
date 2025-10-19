@@ -96,19 +96,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 httpOnly: true,
                 sameSite: 'lax',
                 path: '/',
-                domain: process.env.NEXTAUTH_COOKIE_DOMAIN || 'localhost',
+                // Only set domain if explicitly provided and valid
+                ...(process.env.NEXTAUTH_COOKIE_DOMAIN && process.env.NEXTAUTH_COOKIE_DOMAIN !== 'localhost' ? 
+                    { domain: process.env.NEXTAUTH_COOKIE_DOMAIN } : {}),
                 secure: process.env.NODE_ENV === 'production'
             }
         }
     } : {
-        // Local auth cookies (current system)
+        // Local auth cookies (current system) - no custom domain needed
         sessionToken: {
             name: `next-auth.session-token`,
             options: {
                 httpOnly: true,
                 sameSite: 'lax',
                 path: '/',
-                domain: process.env.NEXTAUTH_COOKIE_DOMAIN || 'localhost',
                 secure: process.env.NODE_ENV === 'production'
             }
         },
@@ -117,7 +118,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             options: {
                 sameSite: 'lax',
                 path: '/',
-                domain: process.env.NEXTAUTH_COOKIE_DOMAIN || 'localhost',
                 secure: process.env.NODE_ENV === 'production'
             }
         },
@@ -127,7 +127,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 httpOnly: true,
                 sameSite: 'lax',
                 path: '/',
-                domain: process.env.NEXTAUTH_COOKIE_DOMAIN || 'localhost',
                 secure: process.env.NODE_ENV === 'production'
             }
         }
@@ -157,14 +156,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         async jwt({ token, account, user }) {
             // When the user signs in
             if (account) {
-                token.accessToken = account.access_token;
-                token.refreshToken = account.refresh_token;
-                token.accessTokenExpires = Date.now() + (account.expires_in || 3600) * 1000;
-                token.userID = user.userID;
-                token.name = user.name;
-                token.role = user.role;
-                token.image = user.image;
-                console.log("JWT callback - New token created");
+                // For credentials auth, we don't need OAuth tokens
+                if (account.provider === 'credentials') {
+                    token.userID = user.userID;
+                    token.name = user.name;
+                    token.role = user.role;
+                    token.image = user.image;
+                    console.log("JWT callback - Credentials token created");
+                    return token;
+                } else {
+                    // For OAuth providers (Google, etc.)
+                    token.accessToken = account.access_token;
+                    token.refreshToken = account.refresh_token;
+                    token.accessTokenExpires = Date.now() + (account.expires_in || 3600) * 1000;
+                    token.userID = user.userID;
+                    token.name = user.name;
+                    token.role = user.role;
+                    token.image = user.image;
+                    console.log("JWT callback - OAuth token created");
+                    return token;
+                }
+            }
+
+            // For credentials auth, no refresh needed - just return the token
+            if (!token.refreshToken) {
+                console.log("JWT callback - Credentials auth, no refresh needed");
                 return token;
             }
     
@@ -180,7 +196,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 return token;
             }
 
-            // Token is expired, refresh it
+            // Token is expired, refresh it (only for OAuth providers)
             console.log("JWT callback - Token expired, refreshing...");
             return refreshAccessToken(token);
         },
