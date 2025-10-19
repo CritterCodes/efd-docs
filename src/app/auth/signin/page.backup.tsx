@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState } from 'react'
 import { signIn, getSession } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import {
   Box,
   Paper,
@@ -16,72 +16,12 @@ import {
 } from '@mui/material'
 import { Business } from '@mui/icons-material'
 
-function SignInContent() {
+export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const searchParams = useSearchParams()
-  
-  // Check if we should use centralized auth
-  const useCentralizedAuth = process.env.NEXT_PUBLIC_USE_CENTRALIZED_AUTH === 'true'
-  
-  useEffect(() => {
-    // If centralized auth is enabled, redirect to admin immediately
-    if (useCentralizedAuth) {
-      const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
-      const adminAuthUrl = `${process.env.NEXT_PUBLIC_ADMIN_URL}/auth/signin?callbackUrl=${encodeURIComponent(window.location.origin + callbackUrl)}`
-      console.log('🔄 Redirecting to centralized auth:', adminAuthUrl)
-      window.location.href = adminAuthUrl
-      return
-    }
-  }, [useCentralizedAuth, searchParams])
-  
-  // Show loading screen while redirecting for centralized auth
-  if (useCentralizedAuth) {
-    return (
-      <Container maxWidth="sm">
-        <Box
-          sx={{
-            marginTop: 8,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Business sx={{ mr: 1 }} />
-                <Typography variant="h5" component="h1">
-                  EFD Documentation
-                </Typography>
-              </Box>
-              <Typography variant="h6" gutterBottom>
-                Redirecting to Authentication
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Please wait while we redirect you to the admin panel for authentication...
-              </Typography>
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              </Box>
-              <Typography variant="caption" display="block" sx={{ mt: 2, textAlign: 'center' }}>
-                If you are not redirected automatically,{' '}
-                <a 
-                  href={`${process.env.NEXT_PUBLIC_ADMIN_URL}/auth/signin?callbackUrl=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin + (searchParams.get('callbackUrl') || '/dashboard') : '/dashboard')}`}
-                  style={{ color: '#1976d2' }}
-                >
-                  click here
-                </a>
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
-      </Container>
-    )
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -177,13 +117,5 @@ function SignInContent() {
         </Card>
       </Box>
     </Container>
-  )
-}
-
-export default function SignInPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <SignInContent />
-    </Suspense>
   )
 }

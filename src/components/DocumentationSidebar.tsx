@@ -26,8 +26,11 @@ import {
   ExpandMore,
 } from '@mui/icons-material'
 import { useSession } from 'next-auth/react'
+import { useSession as useCentralizedSession } from '@/app/providers/CentralizedSessionProvider'
 import { useRouter, usePathname } from 'next/navigation'
-import { NAVIGATION_ITEMS } from '@/lib/constants'
+import { NAVIGATION_ITEMS, type NavigationItem } from '@/lib/constants'
+
+const USE_CENTRALIZED_AUTH = process.env.NEXT_PUBLIC_USE_CENTRALIZED_AUTH === 'true'
 import type { User } from '@/types'
 
 const DRAWER_WIDTH = 280
@@ -47,7 +50,13 @@ interface Props {
 }
 
 export function DocumentationSidebar({ mobileOpen, onMobileClose }: Props) {
-  const { data: session } = useSession()
+  // Use appropriate session hook based on centralized auth setting
+  const legacySession = USE_CENTRALIZED_AUTH ? null : useSession()
+  const centralizedSession = USE_CENTRALIZED_AUTH ? useCentralizedSession() : null
+  
+  // Get session data from appropriate source
+  const session = USE_CENTRALIZED_AUTH ? centralizedSession?.data : legacySession?.data
+  
   const router = useRouter()
   const pathname = usePathname()
   const theme = useTheme()
@@ -58,7 +67,7 @@ export function DocumentationSidebar({ mobileOpen, onMobileClose }: Props) {
     const expanded: string[] = []
     NAVIGATION_ITEMS.forEach(item => {
       if (item.children) {
-        const hasActiveChild = item.children.some(child => pathname.startsWith(child.path))
+        const hasActiveChild = item.children.some(child => child.path && pathname.startsWith(child.path))
         if (hasActiveChild) {
           expanded.push(item.path || item.title)
         }
@@ -185,7 +194,7 @@ export function DocumentationSidebar({ mobileOpen, onMobileClose }: Props) {
                                   bgcolor: isChildActive ? 'primary.dark' : 'action.hover',
                                 },
                               }}
-                              onClick={() => handleNavigation(child.path)}
+                              onClick={() => child.path && handleNavigation(child.path)}
                             >
                               <ListItemText primary={child.title} />
                             </ListItemButton>

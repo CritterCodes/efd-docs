@@ -1,6 +1,7 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
+import { useSession as useCentralizedSession } from '@/app/providers/CentralizedSessionProvider'
 import {
   Box,
   Typography,
@@ -17,6 +18,8 @@ import {
   ListItemIcon,
   Skeleton,
 } from '@mui/material'
+
+const USE_CENTRALIZED_AUTH = process.env.NEXT_PUBLIC_USE_CENTRALIZED_AUTH === 'true'
 import {
   PlayArrow,
   NewReleases,
@@ -30,11 +33,30 @@ import { getRecentUpdates } from '@/lib/releases'
 import type { User } from '@/types'
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession()
+  // Use appropriate session hook based on centralized auth setting
+  const legacySession = USE_CENTRALIZED_AUTH ? { data: null, status: 'unauthenticated' as const } : useSession()
+  const centralizedSession = USE_CENTRALIZED_AUTH ? useCentralizedSession() : null
+  
+  // Get session data from appropriate source
+  const session = USE_CENTRALIZED_AUTH ? centralizedSession?.data : legacySession?.data
+  const status = USE_CENTRALIZED_AUTH ? centralizedSession?.status : legacySession?.status
+  
   const router = useRouter()
   const user = session?.user as User
 
+  console.log('🔍 [DOCS DASHBOARD] Session status:', status)
+  console.log('🔍 [DOCS DASHBOARD] Session data:', session)
+
+  // Check for session and redirect to admin if not authenticated
+  if (status === 'unauthenticated' || (!session?.user && status !== 'loading')) {
+    console.log('❌ [DOCS DASHBOARD] No session found, redirecting to admin login')
+    const adminLoginUrl = `http://localhost:3001/auth/signin?callbackUrl=${encodeURIComponent(window.location.href)}`
+    window.location.href = adminLoginUrl
+    return <div>Redirecting to authentication...</div>
+  }
+
   if (status === 'loading') {
+    console.log('⏳ [DOCS DASHBOARD] Loading session...')
     return (
       <Box sx={{ p: 3 }}>
         <Skeleton variant="text" width={300} height={60} />
@@ -82,12 +104,32 @@ export default function DashboardPage() {
     }
     
     if (hasAccess(['admin', 'wholesaler', 'dev'])) {
-      documents.push({
-        id: 'wholesale-guide',
-        title: 'Wholesale Guide',
-        description: 'Documentation for wholesale partners and processes',
-        path: '/dashboard/guides/wholesale'
-      })
+      documents.push(
+        {
+          id: 'wholesale-getting-started',
+          title: 'Getting Started',
+          description: 'Wholesaler Portal overview and quick start guide',
+          path: '/dashboard/guides/wholesale/getting-started'
+        },
+        {
+          id: 'wholesale-repair-submission',
+          title: 'Repair Submission',
+          description: 'Complete process for submitting repair requests',
+          path: '/dashboard/guides/wholesale/repair-submission'
+        },
+        {
+          id: 'wholesale-status-tracking',
+          title: 'Status Tracking',
+          description: 'Understanding repair statuses and progress tracking',
+          path: '/dashboard/guides/wholesale/status-tracking'
+        },
+        {
+          id: 'wholesale-printing-guide',
+          title: 'Printing Guide',
+          description: 'Generate repair tickets, receipts, and documentation',
+          path: '/dashboard/guides/wholesale/printing-guide'
+        }
+      )
     }
     
     if (hasAccess(['admin', 'dev'])) {

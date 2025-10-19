@@ -1,15 +1,6 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
-// Feature flag for centralized auth
-const USE_CENTRALIZED_AUTH = process.env.USE_CENTRALIZED_AUTH === 'true';
-
-if (USE_CENTRALIZED_AUTH) {
-    console.log('🔄 EFD Docs: Using CENTRALIZED auth (redirect to admin)');
-} else {
-    console.log('🔒 EFD Docs: Using LOCAL auth (current system)');
-}
-
 // Use internal URL for server-side calls, external for client-side
 const getApiUrl = () => {
     // In server-side context, use internal localhost
@@ -20,7 +11,7 @@ const getApiUrl = () => {
     return process.env.NEXT_PUBLIC_URL || window.location.origin;
 };
 
-const providers = USE_CENTRALIZED_AUTH ? [] : [
+const providers = [
     CredentialsProvider({
         credentials: {
             email: { label: 'Email Address', type: 'email' },
@@ -82,20 +73,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     pages: {
         signIn: '/auth/signin',
     },
-    cookies: USE_CENTRALIZED_AUTH ? {
-        // For centralized auth, use shared cookie domain
-        sessionToken: {
-            name: `next-auth.session-token`,
-            options: {
-                httpOnly: true,
-                sameSite: 'lax',
-                path: '/',
-                domain: process.env.NEXTAUTH_COOKIE_DOMAIN || 'localhost',
-                secure: process.env.NODE_ENV === 'production'
-            }
-        }
-    } : {
-        // Local auth cookies (current system)
+    cookies: {
         sessionToken: {
             name: `next-auth.session-token`,
             options: {
@@ -126,28 +104,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             }
         }
     },
-    callbacks: USE_CENTRALIZED_AUTH ? {
-        // Centralized auth callbacks - handle redirects to/from admin
-        async redirect({ url, baseUrl }) {
-            // Allow redirects to admin app
-            if (url.startsWith(process.env.NEXT_PUBLIC_ADMIN_URL)) {
-                return url;
-            }
-            if (url.startsWith("/")) {
-                return `${baseUrl}${url}`;
-            }
-            return baseUrl;
-        },
-        async jwt({ token }) {
-            // For centralized auth, token management is handled by admin app
-            return token;
-        },
-        async session({ session }) {
-            // Pass through session from admin app
-            return session;
-        }
-    } : {
-        // Local auth callbacks (current system)
+    callbacks: {
         async jwt({ token, account, user }) {
             // When the user signs in
             if (account) {
@@ -195,14 +152,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
  * Takes a token, and returns a new token with updated
  * `accessToken` and `accessTokenExpires`. If an error occurs,
  * returns the old token and an error property
- * Only used in local auth mode
  */
 async function refreshAccessToken(token) {
-    // Skip refresh in centralized auth mode
-    if (USE_CENTRALIZED_AUTH) {
-        return token;
-    }
-    
     try {
         if (!token.refreshToken) {
             console.log("No refresh token available");

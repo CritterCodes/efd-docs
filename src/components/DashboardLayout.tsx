@@ -1,10 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Box, AppBar, Toolbar, Typography, IconButton, useTheme, useMediaQuery } from '@mui/material'
 import { Menu, ExitToApp } from '@mui/icons-material'
 import { signOut } from 'next-auth/react'
+import { useSession } from '@/app/providers/CentralizedSessionProvider'
 import { DocumentationSidebar } from '@/components/DocumentationSidebar'
+
+const USE_CENTRALIZED_AUTH = process.env.NEXT_PUBLIC_USE_CENTRALIZED_AUTH === 'true'
 
 interface Props {
   children: React.ReactNode
@@ -14,13 +17,41 @@ export function DashboardLayout({ children }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+  
+  // Use centralized session when enabled
+  const centralizedSession = USE_CENTRALIZED_AUTH ? useSession() : null
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen)
   }
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: '/auth/signin' })
+    if (USE_CENTRALIZED_AUTH && centralizedSession) {
+      centralizedSession.signOut()
+    } else {
+      signOut({ callbackUrl: '/auth/signin' })
+    }
+  }
+
+  // Redirect to signin if not authenticated (client-side check for centralized auth)
+  useEffect(() => {
+    if (USE_CENTRALIZED_AUTH && centralizedSession?.status === 'unauthenticated') {
+      window.location.href = '/auth/signin'
+    }
+  }, [centralizedSession?.status])
+
+  // Show loading while checking authentication
+  if (USE_CENTRALIZED_AUTH && centralizedSession?.status === 'loading') {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <Typography>Loading...</Typography>
+      </Box>
+    )
+  }
+
+  // Don't render if not authenticated
+  if (USE_CENTRALIZED_AUTH && centralizedSession?.status === 'unauthenticated') {
+    return null
   }
 
   return (

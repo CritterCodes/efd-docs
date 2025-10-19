@@ -1,6 +1,6 @@
 // lib/database.js
 import { MongoClient } from "mongodb";
-import Constants from "./constants.js";
+import Constants from "./database-constants.js";
 
 class Database {
     constructor() {

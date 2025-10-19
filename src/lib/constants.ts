@@ -21,7 +21,7 @@ export const DOC_SECTIONS = [
     title: 'Wholesale Guide',
     description: 'Documentation for wholesale partners and processes',
     roles: ['admin', 'wholesaler', 'dev'] as User['role'][],
-    subsections: ['Getting Started']
+    subsections: ['Getting Started', 'Repair Submission', 'Status Tracking', 'Printing Guide']
   },
   {
     id: 'admin',
@@ -80,7 +80,22 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     children: [
       {
         title: 'Getting Started',
-        path: '/dashboard/guides/wholesale',
+        path: '/dashboard/guides/wholesale/getting-started',
+        roles: ['admin', 'wholesaler', 'dev']
+      },
+      {
+        title: 'Repair Submission',
+        path: '/dashboard/guides/wholesale/repair-submission',
+        roles: ['admin', 'wholesaler', 'dev']
+      },
+      {
+        title: 'Status Tracking',
+        path: '/dashboard/guides/wholesale/status-tracking',
+        roles: ['admin', 'wholesaler', 'dev']
+      },
+      {
+        title: 'Printing Guide',
+        path: '/dashboard/guides/wholesale/printing-guide',
         roles: ['admin', 'wholesaler', 'dev']
       }
     ]

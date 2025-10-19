@@ -3,13 +3,13 @@ import { Error } from '@mui/icons-material'
 import Link from 'next/link'
 
 interface Props {
-  searchParams: {
+  searchParams: Promise<{
     error?: string
-  }
+  }>
 }
 
-export default function AuthErrorPage({ searchParams }: Props) {
-  const { error } = searchParams
+export default async function AuthErrorPage({ searchParams }: Props) {
+  const { error } = await searchParams
 
   const getErrorMessage = (error: string) => {
     switch (error) {

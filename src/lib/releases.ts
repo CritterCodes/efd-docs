@@ -6,6 +6,7 @@ export interface ReleaseNote {
   fixes: string[]
   breaking: string[]
   summary: string
+  ecosystem?: boolean
 }
 
 export interface RecentUpdate {

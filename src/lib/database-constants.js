@@ -18,20 +18,20 @@ const Constants = {
         resetToken: 0,
         _id: 0
     },
+    SECURE_USER_PROJECTION: {
+        password: 0,
+        verificationToken: 0,
+        resetToken: 0,
+        email: 0,
+        _id: 0
+    },
     
-    // User Roles
-    USER_ROLES: {
+    // Roles 
+    ROLES: {
         ADMIN: 'admin',
         ARTISAN: 'artisan',
         WHOLESALER: 'wholesaler',
-        CUSTOMER: 'customer'
-    },
-    
-    // User Status
-    USER_STATUS: {
-        ACTIVE: 'active',
-        UNVERIFIED: 'unverified',
-        SUSPENDED: 'suspended'
+        DEV: 'dev'
     }
 };
 
