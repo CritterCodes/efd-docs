@@ -29,20 +29,28 @@ export function CentralizedSessionProvider({ children }: { children: ReactNode }
                 console.log('🔒 [CENTRALIZED SESSION] Checking for stored session...');
                 
                 // First check if we have a stored session from token validation
-                const storedAuth = localStorage.getItem('centralizedAuth');
-                if (storedAuth) {
-                    const authData = JSON.parse(storedAuth);
-                    const age = Date.now() - authData.timestamp;
+                // Only access localStorage on client side
+                if (typeof window !== 'undefined') {
+                    const storedAuth = localStorage.getItem('centralizedAuth');
+                    if (storedAuth) {
+                        try {
+                            const authData = JSON.parse(storedAuth);
+                            const age = Date.now() - authData.timestamp;
                     
-                    // If stored session is less than 30 minutes old, use it
-                    if (age < 30 * 60 * 1000) {
-                        console.log('✅ [CENTRALIZED SESSION] Using stored session:', authData.session.user.email);
-                        setSession(authData.session);
-                        setStatus('authenticated');
-                        return;
-                    } else {
-                        console.log('⏰ [CENTRALIZED SESSION] Stored session expired, removing...');
-                        localStorage.removeItem('centralizedAuth');
+                            // If stored session is less than 30 minutes old, use it
+                            if (age < 30 * 60 * 1000) {
+                                console.log('✅ [CENTRALIZED SESSION] Using stored session:', authData.session.user.email);
+                                setSession(authData.session);
+                                setStatus('authenticated');
+                                return;
+                            } else {
+                                console.log('⏰ [CENTRALIZED SESSION] Stored session expired, removing...');
+                                localStorage.removeItem('centralizedAuth');
+                            }
+                        } catch (parseError) {
+                            console.error('💥 [CENTRALIZED SESSION] Error parsing stored session:', parseError);
+                            localStorage.removeItem('centralizedAuth');
+                        }
                     }
                 }
                 
@@ -86,8 +94,10 @@ export function CentralizedSessionProvider({ children }: { children: ReactNode }
 
     const signOut = async () => {
         try {
-            // Clear stored session
-            localStorage.removeItem('centralizedAuth');
+            // Clear stored session (only on client side)
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('centralizedAuth');
+            }
             
             // Sign out from admin app
             await fetch(`${process.env.NEXT_PUBLIC_ADMIN_URL}/api/auth/signout`, {
@@ -98,8 +108,10 @@ export function CentralizedSessionProvider({ children }: { children: ReactNode }
             setSession(null);
             setStatus('unauthenticated');
             
-            // Redirect to admin sign-in
-            window.location.href = `${process.env.NEXT_PUBLIC_ADMIN_URL}/auth/signin`;
+            // Redirect to admin sign-in (only on client side)
+            if (typeof window !== 'undefined') {
+                window.location.href = `${process.env.NEXT_PUBLIC_ADMIN_URL}/auth/signin`;
+            }
         } catch (error) {
             console.error('Error signing out:', error);
         }
