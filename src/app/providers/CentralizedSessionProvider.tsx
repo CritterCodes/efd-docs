@@ -26,11 +26,9 @@ export function CentralizedSessionProvider({ children }: { children: ReactNode }
     useEffect(() => {
         async function fetchSession() {
             try {
-                console.log('🔒 [CENTRALIZED SESSION] Temporarily bypassing fetch to test CORS issue...');
-                setStatus('unauthenticated');
-                return;
-                
-                console.log('🔒 [CENTRALIZED SESSION] Checking for stored session...');
+                console.log('🔒 [CENTRALIZED SESSION] Starting session fetch process...');
+                console.log('🔒 [CENTRALIZED SESSION] Current environment:', process.env.NODE_ENV);
+                console.log('🔒 [CENTRALIZED SESSION] Admin URL:', process.env.NEXT_PUBLIC_ADMIN_URL);
                 
                 // First check if we have a stored session from token validation
                 // Only access localStorage on client side
@@ -59,15 +57,28 @@ export function CentralizedSessionProvider({ children }: { children: ReactNode }
                 }
                 
                 console.log('🔒 [CENTRALIZED SESSION] Fetching session from admin app...');
-                console.log('🔒 [CENTRALIZED SESSION] Admin URL:', process.env.NEXT_PUBLIC_ADMIN_URL);
+                const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL;
+                const fetchUrl = `${adminUrl}/api/auth/session`;
+                console.log('🔒 [CENTRALIZED SESSION] Admin URL:', adminUrl);
+                console.log('🔒 [CENTRALIZED SESSION] Fetch URL:', fetchUrl);
+                console.log('🔒 [CENTRALIZED SESSION] Current origin:', typeof window !== 'undefined' ? window.location.origin : 'server');
                 
                 // Try to get session from admin app
-                const response = await fetch(`${process.env.NEXT_PUBLIC_ADMIN_URL}/api/auth/session`, {
+                console.log('🔒 [CENTRALIZED SESSION] Making fetch request with credentials...');
+                const response = await fetch(fetchUrl, {
                     credentials: 'include', // Include cookies for cross-origin requests
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                 });
                 
+                console.log('🔒 [CENTRALIZED SESSION] Fetch completed');
                 console.log('🔒 [CENTRALIZED SESSION] Response status:', response.status);
+                console.log('🔒 [CENTRALIZED SESSION] Response statusText:', response.statusText);
                 console.log('🔒 [CENTRALIZED SESSION] Response headers:', Object.fromEntries(response.headers.entries()));
+                console.log('🔒 [CENTRALIZED SESSION] Response type:', response.type);
+                console.log('🔒 [CENTRALIZED SESSION] Response URL:', response.url);
                 
                 if (response.ok) {
                     const sessionData = await response.json();
