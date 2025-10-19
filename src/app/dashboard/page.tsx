@@ -20,6 +20,12 @@ import {
 } from '@mui/material'
 
 const USE_CENTRALIZED_AUTH = process.env.NEXT_PUBLIC_USE_CENTRALIZED_AUTH === 'true'
+
+// Debug logging for environment variables
+console.log('🔍 [DOCS DEBUG] NEXT_PUBLIC_USE_CENTRALIZED_AUTH:', process.env.NEXT_PUBLIC_USE_CENTRALIZED_AUTH)
+console.log('🔍 [DOCS DEBUG] USE_CENTRALIZED_AUTH:', USE_CENTRALIZED_AUTH)
+console.log('🔍 [DOCS DEBUG] NEXT_PUBLIC_ADMIN_URL:', process.env.NEXT_PUBLIC_ADMIN_URL)
+
 import {
   PlayArrow,
   NewReleases,
@@ -44,8 +50,11 @@ export default function DashboardPage() {
   const router = useRouter()
   const user = session?.user as User
 
+  console.log('🔍 [DOCS DASHBOARD] Auth system:', USE_CENTRALIZED_AUTH ? 'CENTRALIZED' : 'LOCAL')
   console.log('🔍 [DOCS DASHBOARD] Session status:', status)
   console.log('🔍 [DOCS DASHBOARD] Session data:', session)
+  console.log('🔍 [DOCS DASHBOARD] User role:', session?.user?.role)
+  console.log('🔍 [DOCS DASHBOARD] User details:', session?.user)
 
   // Check for session and redirect to admin if not authenticated
   if (status === 'unauthenticated' || (!session?.user && status !== 'loading')) {

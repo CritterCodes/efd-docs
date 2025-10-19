@@ -108,9 +108,9 @@ export function CentralizedSessionProvider({ children }: { children: ReactNode }
             setSession(null);
             setStatus('unauthenticated');
             
-            // Redirect to admin sign-in (only on client side)
+            // Redirect to docs sign-in (only on client side)
             if (typeof window !== 'undefined') {
-                window.location.href = `${process.env.NEXT_PUBLIC_ADMIN_URL}/auth/signin`;
+                window.location.href = '/auth/signin';
             }
         } catch (error) {
             console.error('Error signing out:', error);
