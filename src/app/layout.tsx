@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter'
 import { ThemeProvider } from '@mui/material/styles'
@@ -30,7 +31,7 @@ export default function RootLayout({
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <AuthProvider>
-              {USE_CENTRALIZED_AUTH && <TokenHandler />}
+              {USE_CENTRALIZED_AUTH {USE_CENTRALIZED_AUTH && <TokenHandler />}{USE_CENTRALIZED_AUTH && <TokenHandler />} <Suspense fallback={<div>Loading auth...</div>}><TokenHandler /></Suspense>}
               {children}
             </AuthProvider>
           </ThemeProvider>
