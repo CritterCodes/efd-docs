@@ -26,6 +26,10 @@ export function CentralizedSessionProvider({ children }: { children: ReactNode }
     useEffect(() => {
         async function fetchSession() {
             try {
+                console.log('🔒 [CENTRALIZED SESSION] Temporarily bypassing fetch to test CORS issue...');
+                setStatus('unauthenticated');
+                return;
+                
                 console.log('🔒 [CENTRALIZED SESSION] Checking for stored session...');
                 
                 // First check if we have a stored session from token validation
