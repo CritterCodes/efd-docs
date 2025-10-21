@@ -263,7 +263,10 @@ export class UnifiedUserService {
   static async findUserByEmail(email) {
     try {
       const { db } = await connectToDatabase();
-      const user = await db.collection('users').findOne({ email });
+      // Use case-insensitive regex to match emails regardless of case
+      const user = await db.collection('users').findOne({ 
+        email: { $regex: new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
+      });
       return user;
     } catch (error) {
       console.error('Error finding user by email:', error);

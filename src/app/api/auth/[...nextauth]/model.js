@@ -10,7 +10,10 @@ export default class UserModel {
      */
     static async findByEmail(email) {
         const dbInstance = await db.connect();
-        return await dbInstance.collection("users").findOne({ email });
+        // Use case-insensitive regex to match emails regardless of case
+        return await dbInstance.collection("users").findOne({ 
+            email: { $regex: new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
+        });
     }
 
     /**
@@ -93,7 +96,10 @@ export default class UserModel {
      */
     static async emailExists(email) {
         const dbInstance = await db.connect();
-        const existingUser = await dbInstance.collection("users").findOne({ email });
+        // Use case-insensitive regex to match emails regardless of case
+        const existingUser = await dbInstance.collection("users").findOne({ 
+            email: { $regex: new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
+        });
         return !!existingUser;
     }
 
